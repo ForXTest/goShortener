@@ -10,12 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"crypto/md5"
 	"encoding/hex"
-	"urlShotener/cmd/database"
 	"urlShotener/cmd/url"
 )
 
 type ShortUrlHandlers struct {
-	DB *database.MySQL;
+	urlModel url.UrlModelInterface;
+}
+
+func NewShortUrlHandlers(urlModel url.UrlModelInterface) (*ShortUrlHandlers) {
+	return &ShortUrlHandlers { urlModel: urlModel }
 }
 
 func (handler *ShortUrlHandlers) SaveShortUrl (context *gin.Context) {
@@ -28,7 +31,10 @@ func (handler *ShortUrlHandlers) SaveShortUrl (context *gin.Context) {
 
 	fmt.Printf("short url %+v", shortUrl)
 
-	err := url.SaveShortUrl(handler.DB, shortUrl, hashString, fullUrl)
+	urlEntity := url.NewUrlEntity(shortUrl, hashString, fullUrl)
+
+	err := handler.urlModel.SaveShortUrl(urlEntity)
+
 	if err != nil {
 		log.Fatalf("Failed execute query: %v\n", err)
 		context.Status(500)
@@ -45,7 +51,7 @@ func (handler *ShortUrlHandlers) GetFullUrl (context *gin.Context) {
 
 	shortUrl := context.Param("short")
 
-	fullUrl, err := url.GetFullUrlByShort(handler.DB, shortUrl)
+	fullUrl, err := handler.urlModel.GetFullUrlByShort(shortUrl)
 	if err != nil {
 		log.Fatalf("Failed execute query: %v\n", err)
 		context.Status(500)

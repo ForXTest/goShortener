@@ -2,13 +2,21 @@ package url
 
 import "urlShotener/cmd/database"
 
-type Url struct {
-	ShortUrl, Hash, FullUrl string
+type UrlModel struct {
+	DB *database.MySQL;
 }
 
-func GetFullUrlByShort(DB *database.MySQL, shortUrl string) (string, error) {
+type UrlEntity struct {
+	shortUrl, hash, fullUrl string
+}
 
-	result, err := DB.Master.Query("SELECT link FROM short_links WHERE short = ? LIMIT 1", shortUrl);
+func NewUrlEntity(shortUrl string, hash string, fullUrl string) (*UrlEntity) {
+	return &UrlEntity { shortUrl: shortUrl, hash: hash, fullUrl: fullUrl }
+}
+
+func (model *UrlModel) GetFullUrlByShort(shortUrl string) (string, error) {
+
+	result, err := model.DB.Master.Query("SELECT link FROM short_links WHERE short = ? LIMIT 1", shortUrl);
 
 	defer result.Close()
 
@@ -31,13 +39,13 @@ func GetFullUrlByShort(DB *database.MySQL, shortUrl string) (string, error) {
 	return fullUrl, nil
 }
 
-func SaveShortUrl(DB *database.MySQL, shortUrl string, hashString string, fullUrl string) (error) {
+func (model *UrlModel) SaveShortUrl(entity *UrlEntity) (error) {
 
-	_, err := DB.Master.Exec(
+	_, err := model.DB.Master.Exec(
 		"INSERT INTO short_links (short, hash, link) VALUES (?, ?, ?);",
-		shortUrl,
-		hashString,
-		fullUrl,
+		entity.shortUrl,
+		entity.hash,
+		entity.fullUrl,
 	);
 
 	if err != nil {

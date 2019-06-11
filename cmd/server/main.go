@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"urlShotener/cmd/database"
 	"urlShotener/cmd/handlers"
+	"urlShotener/cmd/url"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 		log.Fatalf("Failed connect to mysql: %v\n", err)
 	}
 
-	urlHandlers := &handlers.ShortUrlHandlers{MySqlConnect}
+	urlHandlers := handlers.NewShortUrlHandlers(&url.UrlModel{MySqlConnect})
 
 	gin.SetMode(configData.GinMode.Mode)
 
