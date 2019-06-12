@@ -3,7 +3,7 @@ package url
 import "urlShotener/cmd/database"
 
 type UrlModel struct {
-	DB *database.MySQL;
+	DB *database.MySQL
 }
 
 type UrlEntity struct {
